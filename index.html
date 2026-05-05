@@ -360,20 +360,59 @@ async function signOut() {
 }
 
 // INIT AUTH
+var sessionChecked = false;
+
+async function initApp(session) {
+  if (!session || !session.user) {
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    hideLoading();
+    return;
+  }
+  currentUser = session.user;
+  document.getElementById('user-email-display').textContent = session.user.email;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-pair').onchange = function() {
+    document.getElementById('custom-pair-group').style.display = this.value === 'custom' ? 'flex' : 'none';
+  };
+  await loadTrades();
+  renderDashboard();
+  renderTable();
+}
+
+// Check existing session first on page load
+(async function() {
+  showLoading('Starting...');
+  var timeout = setTimeout(function() {
+    hideLoading();
+    document.getElementById('auth-screen').style.display = 'flex';
+  }, 5000);
+  try {
+    var res = await supabase.auth.getSession();
+    clearTimeout(timeout);
+    if (res.data && res.data.session) {
+      await initApp(res.data.session);
+    } else {
+      hideLoading();
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+  } catch(e) {
+    clearTimeout(timeout);
+    hideLoading();
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+  sessionChecked = true;
+})();
+
 supabase.auth.onAuthStateChange(async function(event, session) {
-  if (session && session.user) {
-    currentUser = session.user;
-    document.getElementById('user-email-display').textContent = session.user.email;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('f-pair').onchange = function() {
-      document.getElementById('custom-pair-group').style.display = this.value === 'custom' ? 'flex' : 'none';
-    };
-    await loadTrades();
-    renderDashboard();
-    renderTable();
-  } else {
+  if (!sessionChecked) return;
+  if (event === 'SIGNED_IN') {
+    await initApp(session);
+  } else if (event === 'SIGNED_OUT') {
+    trades = [];
+    currentUser = null;
     document.getElementById('app-screen').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
     hideLoading();
@@ -383,10 +422,19 @@ supabase.auth.onAuthStateChange(async function(event, session) {
 // TRADES DB
 async function loadTrades() {
   showLoading('Loading your trades...');
-  var result = await supabase.from('trades').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-  hideLoading();
-  if (result.error) { showToast('Error loading trades'); return; }
-  trades = result.data || [];
+  try {
+    var result = await Promise.race([
+      supabase.from('trades').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+      new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, 8000); })
+    ]);
+    hideLoading();
+    if (result.error) { showToast('Error loading trades: ' + result.error.message); trades = []; return; }
+    trades = result.data || [];
+  } catch(e) {
+    hideLoading();
+    showToast('Connection timeout. Please refresh.');
+    trades = [];
+  }
 }
 
 async function saveTrade() {
