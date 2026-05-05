@@ -337,15 +337,22 @@ async function handleEmailAuth() {
   var result;
   if (authMode === 'login') {
     result = await supabase.auth.signInWithPassword({ email: email, password: password });
+    hideLoading();
+    if (result.error) {
+      errEl.textContent = result.error.message;
+    } else if (result.data && result.data.session) {
+      sessionChecked = true;
+      await initApp(result.data.session);
+    }
   } else {
     result = await supabase.auth.signUp({ email: email, password: password });
-  }
-  hideLoading();
-  if (result.error) {
-    errEl.textContent = result.error.message;
-  } else if (authMode === 'signup') {
-    errEl.style.color = 'var(--green)';
-    errEl.textContent = 'Account created! Check your email to verify.';
+    hideLoading();
+    if (result.error) {
+      errEl.textContent = result.error.message;
+    } else {
+      errEl.style.color = 'var(--green)';
+      errEl.textContent = 'Account created! Check your email to verify, then sign in.';
+    }
   }
 }
 
