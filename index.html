@@ -27,10 +27,10 @@ body{font-family:'Outfit',sans-serif;background:var(--cream);color:var(--ink);mi
 .auth-btn{padding:14px;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;}
 .auth-btn-primary{background:var(--ink);color:white;}
 .auth-btn-primary:hover{background:#333;}
-.auth-btn-google{background:white;color:var(--ink);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;gap:10px;}
-.auth-btn-google:hover{border-color:var(--ink-soft);}
-.auth-divider{display:flex;align-items:center;gap:12px;color:var(--ink-muted);font-size:0.8rem;}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+
+
+
 .auth-error{color:var(--red);font-size:0.8rem;text-align:center;min-height:16px;}
 
 /* APP */
@@ -146,11 +146,6 @@ textarea{resize:vertical;min-height:80px;}
       <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
     </div>
     <div class="auth-form">
-      <button class="auth-btn auth-btn-google" onclick="signInWithGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Continue with Google
-      </button>
-      <div class="auth-divider">or</div>
       <input class="auth-input" type="email" id="auth-email" placeholder="Email address"/>
       <input class="auth-input" type="password" id="auth-password" placeholder="Password"/>
       <div class="auth-error" id="auth-error"></div>
@@ -330,17 +325,7 @@ function showAuthTab(mode) {
   document.getElementById('auth-error').textContent = '';
 }
 
-async function signInWithGoogle() {
-  showLoading('Connecting to Google...');
-  var result = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href }
-  });
-  if (result.error) {
-    hideLoading();
-    document.getElementById('auth-error').textContent = result.error.message;
-  }
-}
+
 
 async function handleEmailAuth() {
   var email = document.getElementById('auth-email').value.trim();
