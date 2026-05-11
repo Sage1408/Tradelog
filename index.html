@@ -1,1041 +1,315 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231A1814'/><text x='50' y='68' font-family='Georgia,serif' font-size='42' font-weight='bold' fill='%23C9A84C' text-anchor='middle'>SE</text></svg>"
-    />
-    <title>Systemic Edge - Forex Journal</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="loading-overlay" id="loading-overlay">
-      <div class="spinner"></div>
-      <div class="loading-text" id="loading-text">Loading...</div>
-    </div>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Systemic Edge - Forex Journal</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231A1814'/><text x='50' y='68' font-family='Georgia,serif' font-size='42' font-weight='bold' fill='%23C9A84C' text-anchor='middle'>SE</text></svg>"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
 
-    <!-- AUTH -->
-    <div id="auth-screen">
-      <div class="auth-card">
-        <div class="auth-logo">Systemic<span>Edge</span></div>
-        <div class="auth-sub">Where winning habits begins.</div>
-        <div class="auth-tabs">
-          <button class="auth-tab active" onclick="showAuthTab('login')">
-            Sign In
-          </button>
-          <button class="auth-tab" onclick="showAuthTab('signup')">
-            Sign Up
-          </button>
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading...</div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">Systemic<span>Edge</span></div>
+    <div class="auth-sub">Your personal Forex trading journal</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="showAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
+    </div>
+    <div class="auth-form">
+      <button class="auth-btn auth-btn-google" onclick="signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider">or</div>
+      <input class="auth-input" type="email" id="auth-email" placeholder="Email address"/>
+      <input class="auth-input" type="password" id="auth-password" placeholder="Password"/>
+      <div class="auth-error" id="auth-error"></div>
+      <button class="auth-btn auth-btn-primary" id="auth-submit-btn" onclick="handleEmailAuth()">Sign In</button>
+      <div class="auth-forgot" id="auth-forgot-link" onclick="showForgotPassword()">Forgot password?</div>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD -->
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal">
+    <h3>Reset Password</h3>
+    <p>Enter your email and we will send you a reset link.</p>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="forgot-email" placeholder="you@example.com" style="width:100%"/>
+    </div>
+    <div class="auth-error" id="forgot-error" style="margin-top:8px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeForgotModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="sendPasswordReset()">Send Reset Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <header>
+    <div class="logo">Systemic<span>Edge</span></div>
+    <div class="header-right">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">&#127769;</button>
+      <button class="btn btn-sm" style="background:transparent;border:1.5px solid #444;color:#ccc;" onclick="openExportModal()">Export</button>
+      <button class="btn btn-sm btn-red" onclick="signOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div id="dashboard-skeleton" style="display:none;">
+        <div class="stats-grid">
+          <div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>
         </div>
-        <div class="auth-form">
-          <button class="auth-btn-google" onclick="signInWithGoogle()">
-  <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-  Continue with Google
-</button>
-<div class="auth-divider">or</div>
-          <input
-            class="auth-input"
-            type="email"
-            id="auth-email"
-            placeholder="Email address"
-          />
-          <input
-            class="auth-input"
-            type="password"
-            id="auth-password"
-            placeholder="Password"
-          />
-          <div class="auth-error" id="auth-error"></div>
-          <button
-            class="auth-btn auth-btn-primary"
-            id="auth-submit-btn"
-            onclick="handleEmailAuth()"
-          >
-            Sign In
-          </button>
-          <div
-            class="auth-forgot"
-            id="auth-forgot-link"
-            onclick="showForgotPassword()"
-          >
-            Forgot password?
+        <div class="skeleton skeleton-card" style="height:200px;margin-bottom:14px;"></div>
+      </div>
+      <div id="dashboard-empty" style="display:none;">
+        <div class="empty-dashboard">
+          <div class="empty-icon">&#128200;</div>
+          <h3>Start Your Trading Journey</h3>
+          <p>Log your first trade to see your dashboard come alive with stats, charts and insights.</p>
+          <button class="btn btn-gold" onclick="switchTab('add',document.querySelectorAll('.bnav-btn')[2])">+ Log First Trade</button>
+        </div>
+      </div>
+      <div id="dashboard-content">
+        <div class="stats-grid">
+          <div class="stat-card green"><div class="stat-label">Win Rate</div><div class="stat-value" id="stat-wr">--</div><div class="stat-sub" id="stat-wr-sub">No trades</div></div>
+          <div class="stat-card"><div class="stat-label">Avg RR</div><div class="stat-value" id="stat-rr">--</div><div class="stat-sub">Risk-Reward</div></div>
+          <div class="stat-card blue"><div class="stat-label">Total Trades</div><div class="stat-value" id="stat-total">0</div><div class="stat-sub" id="stat-wlb">0W / 0L / 0BE</div></div>
+          <div class="stat-card red"><div class="stat-label">Best Pair</div><div class="stat-value" id="stat-best-pair" style="font-size:1rem;margin-top:4px;">--</div><div class="stat-sub" id="stat-best-pair-wr">--</div></div>
+          <div class="stat-card purple"><div class="stat-label">Worst Pair</div><div class="stat-value" id="stat-worst-pair" style="font-size:1rem;margin-top:4px;">--</div><div class="stat-sub" id="stat-worst-pair-wr">--</div></div>
+          <div class="stat-card"><div class="stat-label">Profit Factor</div><div class="stat-value" id="stat-pf">--</div><div class="stat-sub">Win RR / Loss RR</div></div>
+          <div class="stat-card"><div class="stat-label">Streak</div><div class="stat-value" id="stat-streak">--</div><div class="stat-sub" id="stat-streak-type">--</div></div>
+          <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="stat-month-wr">--</div><div class="stat-sub" id="stat-month-sub">Win rate</div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card"><div class="chart-title">Cumulative RR Over Time</div><canvas id="rrChart" height="180"></canvas></div>
+          <div class="chart-card"><div class="chart-title">Outcome Breakdown</div><div class="donut-wrap"><canvas id="donutChart" width="150" height="150" style="width:150px;height:150px;"></canvas><div class="donut-legend" id="donut-legend"></div></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card"><div class="chart-title">Win Rate by Session</div><div class="rate-bars" id="session-rate-bars"></div></div>
+          <div class="chart-card"><div class="chart-title">Win Rate by Setup</div><div class="rate-bars" id="setup-rate-bars"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card"><div class="chart-title">Trades by Session</div><canvas id="sessionChart" height="140"></canvas></div>
+          <div class="chart-card"><div class="chart-title">Monthly Performance</div><canvas id="monthChart" height="140"></canvas></div>
+        </div>
+        <div class="chart-card" style="margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div class="chart-title" style="margin-bottom:0;">Trade Streak Calendar</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button onclick="calPrevMonth()" style="background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:1rem;">&#8592;</button>
+              <span id="cal-month-label" style="font-family:DM Mono,monospace;font-size:0.82rem;min-width:90px;text-align:center;"></span>
+              <button onclick="calNextMonth()" style="background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:1rem;">&#8594;</button>
+            </div>
           </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Sun</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Mon</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Tue</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Wed</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Thu</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Fri</div>
+            <div style="font-size:0.65rem;text-align:center;color:var(--ink-muted);">Sat</div>
+          </div>
+          <div class="cal-grid" id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
         </div>
       </div>
     </div>
 
-    <!-- FORGOT PASSWORD MODAL -->
-    <div class="modal-overlay" id="forgot-modal">
-      <div class="modal">
-        <h3>Reset Password</h3>
-        <p>Enter your email and we will send you a reset link.</p>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input
-            type="email"
-            id="forgot-email"
-            placeholder="you@example.com"
-            style="width: 100%"
-          />
-        </div>
-        <div class="auth-error" id="forgot-error" style="margin-top: 8px"></div>
-        <div class="modal-actions">
-          <button class="btn btn-outline" onclick="closeForgotModal()">
-            Cancel
-          </button>
-          <button class="btn btn-primary" onclick="sendPasswordReset()">
-            Send Reset Link
-          </button>
-        </div>
+    <!-- TRADE LOG -->
+    <div id="view-log" class="view">
+      <div class="section-header">
+        <div class="section-title">Trade Log</div>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('add',document.querySelectorAll('.bnav-btn')[2])">+ New Trade</button>
       </div>
+      <div class="filter-bar">
+        <input class="filter-input" type="text" id="filter-pair" placeholder="Pair..." oninput="applyFilters()" style="width:100px;"/>
+        <select class="filter-input" id="filter-session" onchange="applyFilters()">
+          <option value="">All Sessions</option>
+          <option>Asian</option><option>London</option><option>New York</option><option>London/NY Overlap</option>
+        </select>
+        <select class="filter-input" id="filter-result" onchange="applyFilters()">
+          <option value="">All Results</option>
+          <option>Win</option><option>Loss</option><option>BE</option>
+        </select>
+        <input class="filter-input" type="date" id="filter-from" onchange="applyFilters()"/>
+        <input class="filter-input" type="date" id="filter-to" onchange="applyFilters()"/>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Date</th><th>Pair</th><th>Dir</th><th>Session</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP</th><th>Lot</th><th>RR</th><th>Result</th><th>Chart</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="trade-table-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
     </div>
 
-    <!-- APP -->
-    <div id="app-screen">
-      <header>
-        <div class="logo">Systemic<span>Edge</span></div>
-        <div class="header-right">
-          <span class="user-email" id="user-email-display"></span>
-          <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">
-            &#127769;
-          </button>
-          <button
-            class="btn btn-sm"
-            style="
-              background: transparent;
-              border: 1.5px solid #444;
-              color: #ccc;
-            "
-            onclick="openExportModal()"
-          >
-            Export
-          </button>
-          <button class="btn btn-sm btn-red" onclick="signOut()">
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      <div class="container">
-        <!-- DASHBOARD -->
-        <div id="view-dashboard" class="view active">
-          <div id="dashboard-skeleton" style="display: none">
-            <div class="stats-grid">
-              <div class="skeleton skeleton-card"></div>
-              <div class="skeleton skeleton-card"></div>
-              <div class="skeleton skeleton-card"></div>
-              <div class="skeleton skeleton-card"></div>
-              <div class="skeleton skeleton-card"></div>
-              <div class="skeleton skeleton-card"></div>
-            </div>
-            <div
-              class="skeleton skeleton-card"
-              style="height: 200px; margin-bottom: 14px"
-            ></div>
-          </div>
-          <div id="dashboard-empty" style="display: none">
-            <div class="empty-dashboard">
-              <div class="empty-icon">&#128200;</div>
-              <h3>Start Your Trading Journey</h3>
-              <p>
-                Log your first trade to see your dashboard come alive with
-                stats, charts and insights.
-              </p>
-              <button
-                class="btn btn-gold"
-                onclick="switchTab('add',document.querySelectorAll('.bnav-btn')[2])"
-              >
-                + Log First Trade
-              </button>
-            </div>
-          </div>
-          <div id="dashboard-content">
-            <div class="stats-grid">
-              <div class="stat-card green">
-                <div class="stat-label">Win Rate</div>
-                <div class="stat-value" id="stat-wr">--</div>
-                <div class="stat-sub" id="stat-wr-sub">No trades</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Avg RR</div>
-                <div class="stat-value" id="stat-rr">--</div>
-                <div class="stat-sub">Risk-Reward</div>
-              </div>
-              <div class="stat-card blue">
-                <div class="stat-label">Total Trades</div>
-                <div class="stat-value" id="stat-total">0</div>
-                <div class="stat-sub" id="stat-wlb">0W / 0L / 0BE</div>
-              </div>
-              <div class="stat-card red">
-                <div class="stat-label">Best Pair</div>
-                <div
-                  class="stat-value"
-                  id="stat-best-pair"
-                  style="font-size: 1rem; margin-top: 4px"
-                >
-                  --
-                </div>
-                <div class="stat-sub" id="stat-best-pair-wr">--</div>
-              </div>
-              <div class="stat-card purple">
-                <div class="stat-label">Worst Pair</div>
-                <div
-                  class="stat-value"
-                  id="stat-worst-pair"
-                  style="font-size: 1rem; margin-top: 4px"
-                >
-                  --
-                </div>
-                <div class="stat-sub" id="stat-worst-pair-wr">--</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Profit Factor</div>
-                <div class="stat-value" id="stat-pf">--</div>
-                <div class="stat-sub">Win RR / Loss RR</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">Streak</div>
-                <div class="stat-value" id="stat-streak">--</div>
-                <div class="stat-sub" id="stat-streak-type">--</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">This Month</div>
-                <div class="stat-value" id="stat-month-wr">--</div>
-                <div class="stat-sub" id="stat-month-sub">Win rate</div>
-              </div>
-            </div>
-
-            <div class="chart-row">
-              <div class="chart-card">
-                <div class="chart-title">Cumulative RR Over Time</div>
-                <canvas id="rrChart" height="180"></canvas>
-              </div>
-              <div class="chart-card">
-                <div class="chart-title">Outcome Breakdown</div>
-                <div class="donut-wrap">
-                  <canvas
-                    id="donutChart"
-                    width="150"
-                    height="150"
-                    style="width: 150px; height: 150px"
-                  ></canvas>
-                  <div class="donut-legend" id="donut-legend"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="chart-row">
-              <div class="chart-card">
-                <div class="chart-title">Win Rate by Session</div>
-                <div class="rate-bars" id="session-rate-bars"></div>
-              </div>
-              <div class="chart-card">
-                <div class="chart-title">Win Rate by Setup</div>
-                <div class="rate-bars" id="setup-rate-bars"></div>
-              </div>
-            </div>
-
-            <div class="chart-row">
-              <div class="chart-card">
-                <div class="chart-title">Trades by Session</div>
-                <canvas id="sessionChart" height="140"></canvas>
-              </div>
-              <div class="chart-card">
-                <div class="chart-title">Monthly Performance</div>
-                <canvas id="monthChart" height="140"></canvas>
-              </div>
-            </div>
-
-            <div class="chart-card" style="margin-bottom: 24px">
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  margin-bottom: 14px;
-                "
-              >
-                <div class="chart-title" style="margin-bottom: 0">
-                  Trade Streak Calendar
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px">
-                  <button
-                    onclick="calPrevMonth()"
-                    style="
-                      background: var(--paper);
-                      border: 1px solid var(--border);
-                      border-radius: 6px;
-                      padding: 4px 10px;
-                      cursor: pointer;
-                      font-size: 1rem;
-                    "
-                  >
-                    &#8592;
-                  </button>
-                  <span
-                    id="cal-month-label"
-                    style="
-                      font-family: DM Mono, monospace;
-                      font-size: 0.82rem;
-                      min-width: 90px;
-                      text-align: center;
-                    "
-                  ></span>
-                  <button
-                    onclick="calNextMonth()"
-                    style="
-                      background: var(--paper);
-                      border: 1px solid var(--border);
-                      border-radius: 6px;
-                      padding: 4px 10px;
-                      cursor: pointer;
-                      font-size: 1rem;
-                    "
-                  >
-                    &#8594;
-                  </button>
-                </div>
-              </div>
-              <div
-                style="
-                  display: grid;
-                  grid-template-columns: repeat(7, 1fr);
-                  gap: 4px;
-                  margin-bottom: 6px;
-                "
-              >
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Sun
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Mon
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Tue
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Wed
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Thu
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Fri
-                </div>
-                <div
-                  style="
-                    font-size: 0.65rem;
-                    text-align: center;
-                    color: var(--ink-muted);
-                  "
-                >
-                  Sat
-                </div>
-              </div>
-              <div
-                class="cal-grid"
-                id="cal-grid"
-                style="
-                  display: grid;
-                  grid-template-columns: repeat(7, 1fr);
-                  gap: 4px;
-                "
-              ></div>
-              <div
-                style="
-                  display: flex;
-                  gap: 16px;
-                  margin-top: 10px;
-                  flex-wrap: wrap;
-                "
-              >
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    font-size: 0.72rem;
-                    color: var(--ink-muted);
-                  "
-                >
-                  <div
-                    style="
-                      width: 12px;
-                      height: 12px;
-                      border-radius: 2px;
-                      background: var(--green);
-                    "
-                  ></div>
-                  Win
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    font-size: 0.72rem;
-                    color: var(--ink-muted);
-                  "
-                >
-                  <div
-                    style="
-                      width: 12px;
-                      height: 12px;
-                      border-radius: 2px;
-                      background: var(--red);
-                    "
-                  ></div>
-                  Loss
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    font-size: 0.72rem;
-                    color: var(--ink-muted);
-                  "
-                >
-                  <div
-                    style="
-                      width: 12px;
-                      height: 12px;
-                      border-radius: 2px;
-                      background: var(--gold);
-                    "
-                  ></div>
-                  Mixed
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    font-size: 0.72rem;
-                    color: var(--ink-muted);
-                  "
-                >
-                  <div
-                    style="
-                      width: 12px;
-                      height: 12px;
-                      border-radius: 2px;
-                      background: var(--paper);
-                      border: 1px solid var(--border);
-                    "
-                  ></div>
-                  No trade
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TRADE LOG -->
-        <div id="view-log" class="view">
-          <div class="section-header">
-            <div class="section-title">Trade Log</div>
-            <button
-              class="btn btn-primary btn-sm"
-              onclick="switchTab('add',document.querySelectorAll('.bnav-btn')[2])"
-            >
-              + New
-            </button>
-          </div>
-          <div class="filter-bar">
-            <input
-              class="filter-input"
-              type="text"
-              id="filter-pair"
-              placeholder="Pair..."
-              oninput="applyFilters()"
-              style="width: 100px"
-            />
-            <select
-              class="filter-input"
-              id="filter-session"
-              onchange="applyFilters()"
-            >
-              <option value="">All Sessions</option>
-              <option>Asian</option>
-              <option>London</option>
-              <option>New York</option>
-              <option>London/NY Overlap</option>
-            </select>
-            <select
-              class="filter-input"
-              id="filter-result"
-              onchange="applyFilters()"
-            >
-              <option value="">All Results</option>
-              <option>Win</option>
-              <option>Loss</option>
-              <option>BE</option>
-            </select>
-            <input
-              class="filter-input"
-              type="date"
-              id="filter-from"
-              oninput="applyFilters()"
-              style="width: 136px"
-            />
-            <input
-              class="filter-input"
-              type="date"
-              id="filter-to"
-              oninput="applyFilters()"
-              style="width: 136px"
-            />
-            <button class="btn btn-outline btn-sm" onclick="clearFilters()">
-              Clear
-            </button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Date</th>
-                  <th>Pair</th>
-                  <th>Dir</th>
-                  <th>Session</th>
-                  <th>Setup</th>
-                  <th>Entry</th>
-                  <th>SL</th>
-                  <th>TP</th>
-                  <th>Lot</th>
-                  <th>RR</th>
-                  <th>Result</th>
-                  <th>Chart</th>
-                  <th>Notes</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="trade-table-body"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pagination"></div>
-        </div>
-
-        <!-- NEW TRADE -->
-        <div id="view-add" class="view">
-          <div class="form-card">
-            <div class="form-title">Log a Trade</div>
-            <div class="form-grid">
-              <div class="form-section-label">Trade Details</div>
-              <div class="form-group">
-                <label>Date</label><input type="date" id="f-date" />
-              </div>
-              <div class="form-group">
-                <label>Pair</label>
-                <select id="f-pair">
-                  <option value="">Select pair...</option>
-                  <optgroup label="Majors">
-                    <option>EUR/USD</option>
-                    <option>GBP/USD</option>
-                    <option>USD/JPY</option>
-                    <option>AUD/USD</option>
-                    <option>USD/CAD</option>
-                    <option>USD/CHF</option>
-                    <option>NZD/USD</option>
-                  </optgroup>
-                  <optgroup label="Crosses">
-                    <option>EUR/GBP</option>
-                    <option>EUR/JPY</option>
-                    <option>GBP/JPY</option>
-                    <option>AUD/JPY</option>
-                    <option>EUR/AUD</option>
-                    <option>GBP/AUD</option>
-                    <option>CAD/JPY</option>
-                    <option>EUR/CAD</option>
-                  </optgroup>
-                  <optgroup label="Gold/Silver">
-                    <option>XAU/USD</option>
-                    <option>XAG/USD</option>
-                  </optgroup>
-                  <option value="custom">Custom...</option>
-                </select>
-              </div>
-              <div
-                class="form-group"
-                id="custom-pair-group"
-                style="display: none"
-              >
-                <label>Custom Pair</label
-                ><input
-                  type="text"
-                  id="f-custom-pair"
-                  placeholder="e.g. BTC/USD"
-                />
-              </div>
-              <div class="form-group">
-                <label>Direction</label
-                ><select id="f-dir">
-                  <option value="">Select...</option>
-                  <option>Buy</option>
-                  <option>Sell</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Session</label
-                ><select id="f-session">
-                  <option value="">Select...</option>
-                  <option>Asian</option>
-                  <option>London</option>
-                  <option>New York</option>
-                  <option>London/NY Overlap</option>
-                </select>
-              </div>
-              <hr class="form-divider" />
-              <div class="form-section-label">Prices</div>
-              <div class="form-group">
-                <label>Entry Price</label
-                ><input
-                  type="number"
-                  id="f-entry"
-                  placeholder="1.08250"
-                  step="0.00001"
-                />
-              </div>
-              <div class="form-group">
-                <label>Stop Loss</label
-                ><input
-                  type="number"
-                  id="f-sl"
-                  placeholder="1.08000"
-                  step="0.00001"
-                />
-              </div>
-              <div class="form-group">
-                <label>Take Profit</label
-                ><input
-                  type="number"
-                  id="f-tp"
-                  placeholder="1.08750"
-                  step="0.00001"
-                />
-              </div>
-              <div class="form-group">
-                <label>Lot Size</label
-                ><input
-                  type="number"
-                  id="f-lot"
-                  placeholder="0.10"
-                  step="0.01"
-                />
-              </div>
-              <hr class="form-divider" />
-              <div class="form-section-label">Outcome</div>
-              <div class="form-group">
-                <label>Result</label
-                ><select id="f-result">
-                  <option value="">Select...</option>
-                  <option>Win</option>
-                  <option>Loss</option>
-                  <option>BE</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>RR Achieved</label
-                ><input type="number" id="f-rr" placeholder="2.0" step="0.1" />
-              </div>
-              <hr class="form-divider" />
-              <div class="form-section-label">Setup and Notes</div>
-              <div class="form-group">
-                <label>Setup Type</label>
-                <select id="f-setup">
-                  <option value="">Select...</option>
-                  <option>OB - Order Block</option>
-                  <option>FVG - Fair Value Gap</option>
-                  <option>BOS - Break of Structure</option>
-                  <option>CHoCH - Change of Character</option>
-                  <option>EQH/EQL - Equal Highs/Lows</option>
-                  <option>Liquidity Sweep</option>
-                  <option>Breaker Block</option>
-                  <option>Mitigation Block</option>
-                  <option>IFVG - Inverse FVG</option>
-                  <option>Custom</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Mindset (1-10)</label
-                ><input
-                  type="number"
-                  id="f-mindset"
-                  placeholder="7"
-                  min="1"
-                  max="10"
-                />
-              </div>
-              <div class="form-group full">
-                <label>Notes / Reasoning</label
-                ><textarea
-                  id="f-notes"
-                  placeholder="What did you see? How did the trade play out?"
-                ></textarea>
-              </div>
-              <div class="form-group full">
-                <label>Chart Screenshot (optional)</label>
-                <div class="upload-area">
-                  <input
-                    type="file"
-                    id="f-screenshot"
-                    accept="image/*"
-                    onchange="handleScreenshot(event)"
-                  />
-                  <div id="upload-placeholder">
-                    <div style="font-size: 1.4rem; margin-bottom: 5px">
-                      &#128247;
-                    </div>
-                    <div style="font-size: 0.82rem; color: var(--ink-muted)">
-                      Tap to upload chart screenshot
-                    </div>
-                  </div>
-                  <div
-                    id="upload-preview-wrap"
-                    class="upload-preview"
-                    style="display: none"
-                  >
-                    <img id="upload-preview-img" src="" alt="Chart" />
-                    <button
-                      class="upload-remove"
-                      onclick="removeScreenshot(event)"
-                    >
-                      X
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="btn btn-gold" onclick="saveTrade()">
-                  Save Trade
-                </button>
-                <button class="btn btn-outline" onclick="clearForm()">
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- NOTES -->
-        <div id="view-notes" class="view">
-          <div class="section-header">
-            <div class="section-title">Journal Notes</div>
-            <button class="btn btn-primary btn-sm" onclick="newNote()">
-              + New Note
-            </button>
-          </div>
-          <div class="notes-grid">
-            <div class="notes-list" id="notes-list"></div>
-            <div class="note-editor" id="note-editor" style="display: none">
-              <div class="note-editor-header">
-                <input
-                  type="date"
-                  id="note-date"
-                  style="
-                    border: none;
-                    background: transparent;
-                    font-family: Outfit, sans-serif;
-                    font-size: 0.85rem;
-                    color: var(--ink-muted);
-                    outline: none;
-                  "
-                />
-                <div style="display: flex; gap: 8px">
-                  <button class="btn btn-gold btn-sm" onclick="saveNote()">
-                    Save
-                  </button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteNote()">
-                    Delete
-                  </button>
-                </div>
-              </div>
-              <div class="note-editor-body">
-                <textarea
-                  class="note-textarea"
-                  id="note-content"
-                  placeholder="Write your trading thoughts, reflections, or daily review here..."
-                ></textarea>
-              </div>
-            </div>
-            <div
-              id="note-empty"
-              style="
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--ink-muted);
-                font-size: 0.85rem;
-              "
-            >
-              Select or create a note
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BOTTOM NAV -->
-      <nav class="bottom-nav">
-        <button class="bnav-btn active" onclick="switchTab('dashboard',this)">
-          <div class="bnav-icon">&#128200;</div>
-          Dashboard
-        </button>
-        <button class="bnav-btn" onclick="switchTab('log',this)">
-          <div class="bnav-icon">&#128203;</div>
-          Log
-        </button>
-        <button class="bnav-btn" onclick="switchTab('add',this)">
-          <div class="bnav-icon">&#43;</div>
-          New Trade
-        </button>
-        <button class="bnav-btn" onclick="switchTab('notes',this)">
-          <div class="bnav-icon">&#128221;</div>
-          Notes
-        </button>
-      </nav>
-    </div>
-
-    <!-- EXPORT MODAL -->
-    <div class="modal-overlay" id="export-modal">
-      <div class="modal">
-        <h3>Export Journal</h3>
-        <p>Choose a date range and format.</p>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-          "
-        >live server
-          <div class="form-group">
-            <label>From</label
-            ><input
-              type="date"
-              id="export-from"
-              onchange="updateExportCount()"
-            />
-          </div>
-          <div class="form-group">
-            <label>To</label
-            ><input type="date" id="export-to" onchange="updateExportCount()" />
-          </div>
-        </div>
-        <div
-          style="
-            font-size: 0.78rem;
-            color: var(--ink-muted);
-            margin-bottom: 14px;
-          "
-          id="export-count-label"
-        >
-          -- trades
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 10px">
-          <button
-            class="btn btn-primary"
-            style="justify-content: center; padding: 13px"
-            onclick="exportCSV()"
-          >
-            Download CSV
-          </button>
-          <button
-            class="btn btn-gold"
-            style="justify-content: center; padding: 13px"
-            onclick="exportPDF()"
-          >
-            Download PDF (with screenshots)
-          </button>
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-outline" onclick="closeExportModal()">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- EDIT TRADE MODAL -->
-    <div class="modal-overlay" id="edit-modal">
-      <div
-        class="modal"
-        style="width: 600px; max-height: 90vh; overflow-y: auto"
-      >
-        <h3>Edit Trade</h3>
-        <div class="edit-grid">
-          <div class="form-group">
-            <label>Date</label><input type="date" id="e-date" />
-          </div>
-          <div class="form-group">
-            <label>Pair</label><input type="text" id="e-pair" />
-          </div>
-          <div class="form-group">
-            <label>Direction</label
-            ><select id="e-dir">
-              <option>Buy</option>
-              <option>Sell</option>
+    <!-- NEW TRADE -->
+    <div id="view-add" class="view">
+      <div class="form-card">
+        <div class="form-title">Log a Trade</div>
+        <div class="form-grid">
+          <div class="form-section-label">Trade Details</div>
+          <div class="form-group"><label>Date</label><input type="date" id="f-date"/></div>
+          <div class="form-group"><label>Pair</label>
+            <select id="f-pair">
+              <option value="">Select pair...</option>
+              <optgroup label="Majors"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>AUD/USD</option><option>USD/CAD</option><option>USD/CHF</option><option>NZD/USD</option></optgroup>
+              <optgroup label="Crosses"><option>EUR/GBP</option><option>EUR/JPY</option><option>GBP/JPY</option><option>AUD/JPY</option><option>EUR/AUD</option><option>GBP/AUD</option><option>CAD/JPY</option><option>EUR/CAD</option></optgroup>
+              <optgroup label="Gold/Silver"><option>XAU/USD</option><option>XAG/USD</option></optgroup>
+              <option value="custom">Custom...</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Session</label
-            ><select id="e-session">
-              <option value="">--</option>
-              <option>Asian</option>
-              <option>London</option>
-              <option>New York</option>
-              <option>London/NY Overlap</option>
-            </select>
+          <div class="form-group" id="custom-pair-group" style="display:none"><label>Custom Pair</label><input type="text" id="f-custom-pair" placeholder="e.g. BTC/USD"/></div>
+          <div class="form-group"><label>Direction</label><select id="f-dir"><option value="">Select...</option><option>Buy</option><option>Sell</option></select></div>
+          <div class="form-group"><label>Session</label><select id="f-session"><option value="">Select...</option><option>Asian</option><option>London</option><option>New York</option><option>London/NY Overlap</option></select></div>
+          <hr class="form-divider"/>
+          <div class="form-section-label">Prices</div>
+          <div class="form-group"><label>Entry Price</label><input type="number" id="f-entry" placeholder="1.08250" step="0.00001"/></div>
+          <div class="form-group"><label>Stop Loss</label><input type="number" id="f-sl" placeholder="1.08000" step="0.00001"/></div>
+          <div class="form-group"><label>Take Profit</label><input type="number" id="f-tp" placeholder="1.08750" step="0.00001"/></div>
+          <div class="form-group"><label>Lot Size</label><input type="number" id="f-lot" placeholder="0.10" step="0.01"/></div>
+          <hr class="form-divider"/>
+          <div class="form-section-label">Outcome</div>
+          <div class="form-group"><label>Result</label><select id="f-result"><option value="">Select...</option><option>Win</option><option>Loss</option><option>BE</option></select></div>
+          <div class="form-group"><label>RR Achieved</label><input type="number" id="f-rr" placeholder="2.0" step="0.1"/></div>
+          <hr class="form-divider"/>
+          <div class="form-section-label">Setup and Notes</div>
+          <div class="form-group"><label>Setup Type</label>
+            <select id="f-setup"><option value="">Select...</option><option>OB - Order Block</option><option>FVG - Fair Value Gap</option><option>BOS - Break of Structure</option><option>CHoCH - Change of Character</option><option>EQH/EQL - Equal Highs/Lows</option><option>Liquidity Sweep</option><option>Breaker Block</option><option>Mitigation Block</option><option>IFVG - Inverse FVG</option><option>Custom</option></select>
           </div>
-          <div class="form-group">
-            <label>Entry</label
-            ><input type="number" id="e-entry" step="0.00001" />
-          </div>
-          <div class="form-group">
-            <label>Stop Loss</label
-            ><input type="number" id="e-sl" step="0.00001" />
-          </div>
-          <div class="form-group">
-            <label>Take Profit</label
-            ><input type="number" id="e-tp" step="0.00001" />
-          </div>
-          <div class="form-group">
-            <label>Lot Size</label
-            ><input type="number" id="e-lot" step="0.01" />
-          </div>
-          <div class="form-group">
-            <label>Result</label
-            ><select id="e-result">
-              <option>Win</option>
-              <option>Loss</option>
-              <option>BE</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>RR Achieved</label
-            ><input type="number" id="e-rr" step="0.1" />
-          </div>
-          <div class="form-group">
-            <label>Setup</label><input type="text" id="e-setup" />
-          </div>
-          <div class="form-group">
-            <label>Mindset</label
-            ><input type="number" id="e-mindset" min="1" max="10" />
-          </div>
+          <div class="form-group"><label>Mindset (1-10)</label><input type="number" id="f-mindset" placeholder="7" min="1" max="10"/></div>
+          <div class="form-group full"><label>Notes / Reasoning</label><textarea id="f-notes" placeholder="What did you see? How did the trade play out?"></textarea></div>
           <div class="form-group full">
-            <label>Notes</label
-            ><textarea
-              id="e-notes"
-              style="min-height: 70px; width: 100%"
-            ></textarea>
+            <label>Chart Screenshot (optional)</label>
+            <div class="upload-area">
+              <input type="file" id="f-screenshot" accept="image/*" onchange="handleScreenshot(event)"/>
+              <div id="upload-placeholder"><div style="font-size:1.4rem;margin-bottom:5px;">&#128247;</div><div style="font-size:0.82rem;color:var(--ink-muted)">Tap to upload chart screenshot</div></div>
+              <div id="upload-preview-wrap" class="upload-preview" style="display:none;">
+                <img id="upload-preview-img" src="" alt="Chart"/>
+                <button class="upload-remove" onclick="removeScreenshot(event)">X</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" onclick="saveTrade()">Save Trade</button>
+            <button class="btn btn-outline" onclick="clearForm()">Clear</button>
           </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-outline" onclick="closeEditModal()">
-            Cancel
-          </button>
-          <button class="btn btn-gold" onclick="updateTrade()">
-            Save Changes
-          </button>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div id="view-notes" class="view">
+      <div class="section-header">
+        <div class="section-title">Journal Notes</div>
+        <button class="btn btn-primary btn-sm" onclick="newNote()">+ New Note</button>
+      </div>
+      <div class="notes-grid">
+        <div class="notes-list" id="notes-list"></div>
+        <div class="note-editor" id="note-editor" style="display:none;">
+          <div class="note-editor-header">
+            <input type="date" id="note-date" style="border:none;background:transparent;font-family:Outfit,sans-serif;font-size:0.85rem;color:var(--ink-muted);outline:none;"/>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-gold btn-sm" onclick="saveNote()">Save</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteNote()">Delete</button>
+            </div>
+          </div>
+          <div class="note-editor-body">
+            <textarea class="note-textarea" id="note-content" placeholder="Write your trading thoughts, reflections, or daily review here..."></textarea>
+          </div>
+        </div>
+        <div id="note-empty" style="background:var(--card);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);font-size:0.85rem;">
+          Select or create a note
         </div>
       </div>
     </div>
 
-    <!-- SCREENSHOT VIEWER -->
-    <div
-      id="screenshot-modal"
-      style="
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.88);
-        z-index: 300;
-        align-items: center;
-        justify-content: center;
-      "
-      onclick="closeScreenshotModal()"
-    >
-      <div style="position: relative" onclick="event.stopPropagation()">
-        <img
-          id="screenshot-modal-img"
-          src=""
-          style="
-            max-width: 92vw;
-            max-height: 86vh;
-            border-radius: 10px;
-            display: block;
-          "
-        />
-        <button
-          onclick="closeScreenshotModal()"
-          style="
-            position: absolute;
-            top: -13px;
-            right: -13px;
-            background: #1a1814;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-          "
-        >
-          X
-        </button>
-      </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="bnav-btn active" onclick="switchTab('dashboard',this)"><div class="bnav-icon">&#128200;</div>Dashboard</button>
+    <button class="bnav-btn" onclick="switchTab('log',this)"><div class="bnav-icon">&#128203;</div>Log</button>
+    <button class="bnav-btn" onclick="switchTab('add',this)"><div class="bnav-icon">&#43;</div>New Trade</button>
+    <button class="bnav-btn" onclick="switchTab('notes',this)"><div class="bnav-icon">&#128221;</div>Notes</button>
+  </nav>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <h3>Export Journal</h3>
+    <p>Choose a date range and format.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div class="form-group"><label>From</label><input type="date" id="export-from" onchange="updateExportCount()"/></div>
+      <div class="form-group"><label>To</label><input type="date" id="export-to" onchange="updateExportCount()"/></div>
     </div>
+    <div style="font-size:0.78rem;color:var(--ink-muted);margin-bottom:14px;" id="export-count-label">-- trades</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-primary" style="justify-content:center;padding:13px;" onclick="exportCSV()">Download CSV</button>
+      <button class="btn btn-gold" style="justify-content:center;padding:13px;" onclick="exportPDF()">Download PDF (with screenshots)</button>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeExportModal()">Cancel</button></div>
+  </div>
+</div>
 
-    <div id="toast"></div>
+<!-- EDIT TRADE MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal" style="width:600px;max-height:90vh;overflow-y:auto;">
+    <h3>Edit Trade</h3>
+    <div class="edit-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="e-date"/></div>
+      <div class="form-group"><label>Pair</label><input type="text" id="e-pair"/></div>
+      <div class="form-group"><label>Direction</label><select id="e-dir"><option>Buy</option><option>Sell</option></select></div>
+      <div class="form-group"><label>Session</label><select id="e-session"><option value="">--</option><option>Asian</option><option>London</option><option>New York</option><option>London/NY Overlap</option></select></div>
+      <div class="form-group"><label>Entry</label><input type="number" id="e-entry" step="0.00001"/></div>
+      <div class="form-group"><label>Stop Loss</label><input type="number" id="e-sl" step="0.00001"/></div>
+      <div class="form-group"><label>Take Profit</label><input type="number" id="e-tp" step="0.00001"/></div>
+      <div class="form-group"><label>Lot Size</label><input type="number" id="e-lot" step="0.01"/></div>
+      <div class="form-group"><label>Result</label><select id="e-result"><option>Win</option><option>Loss</option><option>BE</option></select></div>
+      <div class="form-group"><label>RR Achieved</label><input type="number" id="e-rr" step="0.1"/></div>
+      <div class="form-group"><label>Setup</label><input type="text" id="e-setup"/></div>
+      <div class="form-group"><label>Mindset</label><input type="number" id="e-mindset" min="1" max="10"/></div>
+      <div class="form-group full"><label>Notes</label><textarea id="e-notes" style="min-height:70px;width:100%;"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="updateTrade()">Save Changes</button>
+    </div>
+  </div>
+</div>
 
-    <script src="script.js"></script>
-  </body>
+<!-- SCREENSHOT VIEWER -->
+<div id="screenshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:300;align-items:center;justify-content:center;" onclick="closeScreenshotModal()">
+  <div style="position:relative;" onclick="event.stopPropagation()">
+    <img id="screenshot-modal-img" src="" style="max-width:92vw;max-height:86vh;border-radius:10px;display:block;"/>
+    <button onclick="closeScreenshotModal()" style="position:absolute;top:-13px;right:-13px;background:#1A1814;color:white;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;">X</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
 </html>
