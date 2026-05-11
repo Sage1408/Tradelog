@@ -194,20 +194,21 @@
         }
         sessionChecked = true;
       })();
-      sb.auth.onAuthStateChange(async function (ev, session) {
-        if (!sessionChecked) return;
-        if (ev === "SIGNED_IN" && !currentUser) {
-          await initApp(session);
-        } else if (ev === "SIGNED_OUT") {
-          trades = [];
-          notes = [];
-          currentUser = null;
-          document.getElementById("app-screen").style.display = "none";
-          document.getElementById("auth-screen").style.display = "flex";
-          hideLoading();
-        }
-      });
-
+      sb.auth.onAuthStateChange(async function(ev,session){
+  if(ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED'){
+    if(session&&session.user){
+      if(!currentUser||currentUser.id!==session.user.id){
+        sessionChecked=true;
+        await initApp(session);
+      }
+    }
+  } else if(ev==='SIGNED_OUT'){
+    trades=[];notes=[];currentUser=null;
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('auth-screen').style.display='flex';
+    hideLoading();
+  }
+});
       /* TABS */
       function switchTab(name, btn) {
         document.querySelectorAll(".view").forEach(function (v) {
