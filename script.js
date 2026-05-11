@@ -86,6 +86,17 @@
           setTimeout(closeForgotModal, 3000);
         }
       }
+      async function signInWithGoogle() {
+  showLoading('Connecting to Google...');
+  var result = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (result.error) {
+    hideLoading();
+    document.getElementById('auth-error').textContent = result.error.message;
+  }
+}
       async function handleEmailAuth() {
         var email = document.getElementById("auth-email").value.trim();
         var pass = document.getElementById("auth-password").value;

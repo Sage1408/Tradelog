@@ -110,6 +110,10 @@
         flex-direction: column;
         gap: 12px;
       }
+      .auth-btn-google{background:white;color:#1A1814;border:1.5px solid #DDD8CE;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.auth-btn-google:hover{border-color:#4A4640;}
+.auth-divider{display:flex;align-items:center;gap:12px;color:#9A948A;font-size:0.8rem;margin:4px 0;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:#DDD8CE;}
       .auth-input {
         font-family: "Outfit", sans-serif;
         font-size: 0.9rem;
